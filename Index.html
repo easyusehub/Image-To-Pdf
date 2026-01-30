@@ -4,48 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Image to PDF – Free Online Tool</title>
-<meta name="description" content="Convert images to PDF online. Free, fast, no API, works on mobile & desktop.">
+<meta name="description" content="Convert multiple images (JPG, PNG, WEBP) into a single PDF online. Free, fast, browser-based, mobile-friendly, no API key required.">
 
 <style>
-body{
+body {
   margin:0;
   font-family:Arial, sans-serif;
   background:#0f0f0f;
-  color:#ffffff;
+  color:#fff;
   text-align:center;
 }
-.container{
+.container {
   max-width:600px;
   margin:30px auto;
   padding:20px;
 }
-.logo img{
+.logo img {
   max-width:220px;
   margin-bottom:20px;
 }
-h1{
-  font-size:30px;
-  margin-bottom:10px;
+h1 { font-size:30px; margin-bottom:10px; }
+p { color:#d1d5db; font-size:16px; margin-bottom:20px; }
+input[type=file] {
+  display:block;
+  margin:20px auto;
 }
-p{
-  color:#d1d5db;
-  font-size:16px;
-  margin-bottom:25px;
-}
-.drop-zone{
-  border:2px dashed #22c55e;
-  padding:35px;
-  border-radius:12px;
-  cursor:pointer;
-  margin-bottom:15px;
-}
-.drop-zone.active{
-  background:#052e16;
-}
-input[type=file]{
-  display:none;
-}
-button{
+button {
   width:100%;
   padding:14px;
   font-size:18px;
@@ -55,25 +39,10 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-#status{
-  margin-top:15px;
-  font-weight:bold;
-}
-#download{
-  display:none;
-  margin-top:18px;
-  padding:12px;
-  background:#16a34a;
-  color:#fff;
-  text-decoration:none;
-  border-radius:8px;
-  display:inline-block;
-}
-.home-btn{
+button:disabled { opacity:.6; cursor:not-allowed; }
+#status { margin-top:15px; font-weight:bold; }
+#download { display:none; margin-top:18px; padding:12px; background:#16a34a; color:#fff; text-decoration:none; border-radius:8px; display:inline-block; }
+.home-btn {
   display:inline-block;
   margin-top:30px;
   padding:12px 24px;
@@ -81,10 +50,17 @@ button:disabled{
   color:#fff;
   text-decoration:none;
   border-radius:8px;
+  font-weight:bold;
 }
-.home-btn:hover{
-  background:#22c55e;
-  border-color:#22c55e;
+.home-btn:hover { background:#22c55e; border-color:#22c55e; }
+.ad-placeholder {
+  border:2px dashed #555;
+  padding:20px;
+  margin:25px 0;
+  color:#aaa;
+  font-size:14px;
+  text-align:center;
+  border-radius:6px;
 }
 </style>
 </head>
@@ -100,24 +76,26 @@ button:disabled{
   </div>
 
   <h1>Image to PDF</h1>
-  <p>
-    Convert JPG, PNG or WEBP images into a single PDF.
-    100% free, no sign-up, works directly in your browser.
-  </p>
+  <p>Click "Select Images" to choose your images and convert them into a single PDF. 100% free, works in browser, mobile-friendly.</p>
 
-  <!-- Upload Area -->
-  <div class="drop-zone" id="dropZone">
-    📂 Drag & drop images here or click to select
+  <!-- Top Ad Placeholder -->
+  <div class="ad-placeholder" id="ad-top">
+    Ad Placeholder (Top)
   </div>
-  <input type="file" id="fileInput" accept="image/*" multiple>
 
-  <button id="convertBtn" disabled>📄 Convert to PDF</button>
+  <!-- File Select -->
+  <input type="file" id="fileInput" accept="image/*" multiple>
+  <button id="convertBtn" disabled>Select Images & Convert to PDF</button>
 
   <p id="status"></p>
   <a id="download">⬇ Download PDF</a>
 
+  <!-- Bottom Ad Placeholder -->
+  <div class="ad-placeholder" id="ad-bottom">
+    Ad Placeholder (Bottom)
+  </div>
+
   <!-- Back Home -->
-  <br>
   <a class="home-btn" href="https://easyusehub.blogspot.com/p/free-pdf-tools-easyusehub.html?m=1">
     🏠 Back to PDF Tools
   </a>
@@ -126,7 +104,6 @@ button:disabled{
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
-const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const convertBtn = document.getElementById("convertBtn");
 const statusText = document.getElementById("status");
@@ -134,36 +111,19 @@ const downloadLink = document.getElementById("download");
 
 let images = [];
 
-dropZone.onclick = () => fileInput.click();
-
-dropZone.ondragover = e => {
-  e.preventDefault();
-  dropZone.classList.add("active");
-};
-
-dropZone.ondragleave = () => {
-  dropZone.classList.remove("active");
-};
-
-dropZone.ondrop = e => {
-  e.preventDefault();
-  dropZone.classList.remove("active");
-  fileInput.files = e.dataTransfer.files;
-  handleFiles();
-};
-
-fileInput.onchange = handleFiles;
-
-function handleFiles(){
+fileInput.onchange = () => {
   images = Array.from(fileInput.files);
-  if(images.length){
-    dropZone.innerText = `✅ ${images.length} image(s) selected`;
+  if(images.length > 0){
     convertBtn.disabled = false;
+    statusText.innerText = `${images.length} image(s) selected`;
+  } else {
+    convertBtn.disabled = true;
     statusText.innerText = "";
   }
-}
+};
 
 convertBtn.onclick = async () => {
+  if(images.length === 0) return;
   statusText.innerText = "⏳ Creating PDF...";
   const pdfDoc = await PDFLib.PDFDocument.create();
 
@@ -178,12 +138,7 @@ convertBtn.onclick = async () => {
     }
 
     const page = pdfDoc.addPage([image.width, image.height]);
-    page.drawImage(image, {
-      x:0,
-      y:0,
-      width:image.width,
-      height:image.height
-    });
+    page.drawImage(image,{ x:0, y:0, width:image.width, height:image.height });
   }
 
   const pdfBytes = await pdfDoc.save();
